@@ -2,6 +2,7 @@ const net = require('net');
 const server = net.createServer();
 const PORT = 4000;
 
+let name, hobbies, gender;
 let clients = [];
 let step = 1;
 let model = {
@@ -40,6 +41,35 @@ A ${gender} ${name} who likes ${hobbies}.`)
    })
 }
 
+const selectGender = (input) => {
+    genders = ['male', 'female'];
+    if(genders.indexOf(input.toLowerCase()) === -1) {
+        clients.forEach((socket) => {
+            socket.write(`Please enter from one of the choices.`);
+        })
+        step--;
+    }
+    else {
+        gender = input;
+    }
+}
+
+const selectHobbies = (input) => {
+    hobbySelection = ['fishing', 'cooking', 'swimming'];
+    let isHobbyValid = input.split(',').every((hobby) => {
+        return hobbySelection.indexOf(hobby.trim().toLowerCase()) > -1;
+    });
+    if(!isHobbyValid) {
+        clients.forEach((socket) => {
+            socket.write(`Please enter from one of the choices.`);
+        })
+        step--;
+    }
+    else {
+        hobbies = input;
+    }
+}
+
 server.on('connection', (client) => {
     console.log(`A client connected from port ${client.remotePort}.`);
 
@@ -54,17 +84,21 @@ server.on('connection', (client) => {
                 broadcast(input, client, step);
                 break;
             case 2:
+                name = input;
                 // Asks for the gender
                 broadcast(input, client, step);
                 break;
             case 3:
+                selectGender(input);
                 // Asks for the hobbies
                 broadcast(input, client, step);
                 break;
             
             case 4:
+                selectHobbies(input);
                 // Will disconnect the client sockets.
                 broadcast(input, client, step);
+                server.close();
                 break;
         }
         step++;
@@ -78,4 +112,3 @@ server.on('connection', (client) => {
 server.listen(PORT, () => {
 console.log(`Server is listening to port ${PORT}`);
 });
-

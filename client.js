@@ -11,7 +11,12 @@ const rl = readline.createInterface({
 
 client.connect(PORT, () => {
     client.on('data', (data) => {
-        console.log(data.toString());
+        if(data.toString() === 'end') {
+            client.end();
+        }
+        else {
+            console.log(data.toString());
+        }
     }); 
 
     client.once('close', () => { 
