@@ -1,6 +1,11 @@
 const net = require('net');
-const server = net.createServer();
 const PORT = 4000;
+
+const server = net.createServer((c) => {
+    c.on('error', (err) => {
+        console.log('Error');
+    })
+});
 
 let name, hobbies, gender;
 let clients = [];
@@ -98,17 +103,17 @@ server.on('connection', (client) => {
                 selectHobbies(input);
                 // Will disconnect the client sockets.
                 broadcast(input, client, step);
-                server.close();
+                // server.close();
+                step = 0;
                 break;
         }
         step++;
     })
-
     client.once('close', () => {
-        console.log('Server is now closed.')
+        console.log('A client disconnected.')
     })
 });
-
+  
 server.listen(PORT, () => {
 console.log(`Server is listening to port ${PORT}`);
 });
