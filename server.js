@@ -7,7 +7,7 @@ const server = net.createServer((c) => {
     })
 });
 
-let name, hobbies, gender;
+let hasSurveyStarted, firstClientResponse, name, gender, hobbies;
 let clients = [];
 let step = 1;
 let model = {
@@ -75,16 +75,31 @@ const selectHobbies = (input) => {
     }
 }
 
+const showSurveyHistory = (client) => {
+    if(!hasSurveyStarted) {
+        client.write('Input: ');
+    }
+    else {
+        for(let i=0; i<step; i++) {
+            surveyHistory = [`Input:\n${firstClientResponse}\n${model[1]}`, ``, `\n${name}\n${model[2]}`, `${gender}\n${model[3]}`];
+            client.write(surveyHistory[i]);
+        }
+    }
+}
+
 server.on('connection', (client) => {
     console.log(`A client connected from port ${client.remotePort}.`);
 
     clients.push(client);
-    client.write('Input: ')
+    // client.write('Input: ')
+    showSurveyHistory(client);
 
     client.on('data', (data) => {
+        hasSurveyStarted = true;
         let input = data.toString();
         switch(step) {
             case 1:
+                firstClientResponse = input;
                 // Asks for the name
                 broadcast(input, client, step);
                 break;
@@ -103,8 +118,7 @@ server.on('connection', (client) => {
                 selectHobbies(input);
                 // Will disconnect the client sockets.
                 broadcast(input, client, step);
-                // server.close();
-                step = 0;
+                server.close();
                 break;
         }
         step++;
