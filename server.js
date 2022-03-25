@@ -7,9 +7,10 @@ const server = net.createServer((c) => {
     })
 });
 
-let hasSurveyStarted, firstClientResponse, name, gender, hobbies;
+let hasSurveyStarted, name, gender, hobbies;
 let clients = [];
 let step = 1;
+let output='Input:';
 let model = {
     1: 
 `Output
@@ -29,7 +30,7 @@ Input:`,
     value: what are your hobbies?
     options: [Fishing, Cooking, Swimming]
 Input:`};
-let output='Input:';
+
 const broadcast = (input, client, step) => {
     output += `\n${model[step]}`;
     clients.forEach((socket) => {
@@ -83,10 +84,7 @@ const showSurveyHistory = (client) => {
         client.write('Input: ');
     }
     else {
-        
-        // surveyHistory = [`Input:\n${firstClientResponse}\n${model[1]}`, ``, `${name}\n${model[2]}`, `${gender}\n${model[3]}`];
         client.write(output);
-        
     }
 }
 
@@ -102,7 +100,6 @@ server.on('connection', (client) => {
         output += `\n${input}`;
         switch(step) {
             case 1:
-                firstClientResponse = input;
                 // Asks for the name
                 broadcast(input, client, step);
                 break;
@@ -116,7 +113,6 @@ server.on('connection', (client) => {
                 // Asks for the hobbies
                 broadcast(input, client, step);
                 break;
-            
             case 4:
                 selectHobbies(input);
                 // Will disconnect the client sockets.
