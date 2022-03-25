@@ -29,8 +29,9 @@ Input:`,
     value: what are your hobbies?
     options: [Fishing, Cooking, Swimming]
 Input:`};
-
+let output='Input:';
 const broadcast = (input, client, step) => {
+    output += `\n${model[step]}`;
     clients.forEach((socket) => {
         if(step === 4) {
     socket.write(`Output: 
@@ -49,15 +50,16 @@ A ${gender} ${name} who likes ${hobbies}.`)
 const selectGender = (input) => {
     genders = ['male', 'female'];
     if(genders.indexOf(input.toLowerCase()) === -1) {
+        output += '\nPlease enter from one of the choices.'
         clients.forEach((socket) => {
-            socket.write(`Please enter from one of the choices.`);
+            socket.write('Please enter from one of the choices.');
         })
         step--;
     }
     else {
         gender = input;
     }
-}
+}  
 
 const selectHobbies = (input) => {
     hobbySelection = ['fishing', 'cooking', 'swimming'];
@@ -65,8 +67,9 @@ const selectHobbies = (input) => {
         return hobbySelection.indexOf(hobby.trim().toLowerCase()) > -1;
     });
     if(!isHobbyValid) {
+        output += '\nPlease enter from one of the choices.'
         clients.forEach((socket) => {
-            socket.write(`Please enter from one of the choices.`);
+            socket.write('Please enter from one of the choices.');
         })
         step--;
     }
@@ -80,10 +83,10 @@ const showSurveyHistory = (client) => {
         client.write('Input: ');
     }
     else {
-        for(let i=0; i<step; i++) {
-            surveyHistory = [`Input:\n${firstClientResponse}\n${model[1]}`, ``, `\n${name}\n${model[2]}`, `${gender}\n${model[3]}`];
-            client.write(surveyHistory[i]);
-        }
+        
+        // surveyHistory = [`Input:\n${firstClientResponse}\n${model[1]}`, ``, `${name}\n${model[2]}`, `${gender}\n${model[3]}`];
+        client.write(output);
+        
     }
 }
 
@@ -91,12 +94,12 @@ server.on('connection', (client) => {
     console.log(`A client connected from port ${client.remotePort}.`);
 
     clients.push(client);
-    // client.write('Input: ')
     showSurveyHistory(client);
 
     client.on('data', (data) => {
         hasSurveyStarted = true;
         let input = data.toString();
+        output += `\n${input}`;
         switch(step) {
             case 1:
                 firstClientResponse = input;
@@ -105,7 +108,7 @@ server.on('connection', (client) => {
                 break;
             case 2:
                 name = input;
-                // Asks for the gender
+                // Asks for the gender   
                 broadcast(input, client, step);
                 break;
             case 3:
